@@ -15,18 +15,10 @@ fn read_input(filename: impl AsRef<Path>) -> Vec<String> {
 }
 
 pub fn run() {
-    let mut input = read_input("input2.txt");
-    //let mut input = read_input("input2 copy.txt");
+    let mut input = read_input("input3.txt");
+    //let mut input = read_input("input3 copy.txt");
     //input.push("".to_string());
     let mut score = 0;
-    for i in input {
-        let (elf, you) = i.split_once(' ').unwrap();
-        match you {
-            "X" => score += 1 + if elf == "A" {3} else if elf == "B" {0} else {6},
-            "Y" => score += 2 + if elf == "B" {3} else if elf == "C" {0} else {6},
-            "Z" => score += 3 + if elf == "C" {3} else if elf == "A" {0} else {6},
-            _ => println!("Fel i match"),
-        }
-    }
+
     println!("Svaren på del 1 är {}", score)
 }

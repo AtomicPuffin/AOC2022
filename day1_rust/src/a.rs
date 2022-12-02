@@ -15,8 +15,8 @@ fn read_input(filename: impl AsRef<Path>) -> Vec<String> {
 }
 
 pub fn run() {
-    let mut input = read_input("input1.txt");
-    //let mut input = read_input("input1 copy.txt");
+    let mut input = read_input("input2.txt");
+    //let mut input = read_input("input2 copy.txt");
     let mut max = 0;
     let mut current = 0;
     input.push("".to_string());
