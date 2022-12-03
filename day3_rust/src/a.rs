@@ -15,10 +15,23 @@ fn read_input(filename: impl AsRef<Path>) -> Vec<String> {
 }
 
 pub fn run() {
-    let mut input = read_input("input3.txt");
+    let input = read_input("input3.txt");
     //let mut input = read_input("input3 copy.txt");
-    //input.push("".to_string());
     let mut score = 0;
+    for i in input {        
+        let (first, second) = i.split_at(i.len()/2);
+        for c in first.chars() {
+            if second.contains(c) {
+                if c.is_lowercase() {
+                    score += c as i32 - 96;
+                    break;
+                } else {
+                    score += c as i32 - 38;
+                    break;
+                }
+            }
+        }
+    }
 
-    println!("Svaren på del 1 är {}", score)
+    println!("Svaret på del 1 är {}", score)
 }
