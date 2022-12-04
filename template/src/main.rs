@@ -12,6 +12,7 @@ fn main() {
 
 fn part_1 (input: &str) -> i32 {
     todo!()
+    //.inspect(|i| println!("{}", i))
 }
 
 fn part_2 (input: &str) -> i32 {
