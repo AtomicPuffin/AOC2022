@@ -8,9 +8,7 @@ fn main() {
 
 fn part_1 (input: &str) -> String {
     let (stack_data, instructions) = input.split_once("\n\n").unwrap();
-    
     let mut stacks = parse_stacks(stack_data);
-
     let inst = parse_inst(instructions);
 
     for i in inst {
@@ -26,9 +24,7 @@ fn part_1 (input: &str) -> String {
 
 fn part_2 (input: &str) -> String {
     let (stack_data, instructions) = input.split_once("\n\n").unwrap();
-    
     let mut stacks = parse_stacks(stack_data);
-
     let inst = parse_inst(instructions);
 
     for i in inst {
@@ -53,10 +49,7 @@ fn parse_stacks(stack_data: &str) -> Vec<Vec<&str>> {
         .last()
         .unwrap()
         .as_bytes()
-        .chunks(4)
-        .map(std::str::from_utf8)
-        .collect::<Result<Vec<&str>, _>>()
-        .unwrap();
+        .chunks(4);
 
     for _ in crates {
         stacks.push(Vec::new());
@@ -64,7 +57,11 @@ fn parse_stacks(stack_data: &str) -> Vec<Vec<&str>> {
     
     for l in rs {
         let mut pile_no = 0;
-        let crates = split_4(l);
+        let crates = l.as_bytes()
+            .chunks(4)
+            .map(std::str::from_utf8)
+            .collect::<Result<Vec<&str>, _>>()
+            .unwrap();
         for c in &crates {
             if c.chars().nth(0).unwrap() != ' ' {
                 stacks[pile_no].insert(0, *c);
@@ -85,15 +82,6 @@ fn parse_inst(instructions: &str) -> Vec<(usize,usize,usize)> {
         inst.push((c,f,t));
     }
     inst
-}
-
-fn split_4 (l: &str) -> Vec<&str> {
-    let crates = l.as_bytes()
-        .chunks(4)
-        .map(std::str::from_utf8)
-        .collect::<Result<Vec<&str>, _>>()
-        .unwrap();
-    crates
 }
 
 fn parse_out(stacks: Vec<Vec<&str>>) -> String {
