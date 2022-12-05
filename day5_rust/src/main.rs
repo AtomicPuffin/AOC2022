@@ -37,7 +37,7 @@ fn part_2 (input: &str) -> String {
         }
     }
 
-    let ans = parse_out(stacks);
+    let ans = parse_out_f(stacks);
     ans
 }
 
@@ -45,13 +45,7 @@ fn parse_stacks(stack_data: &str) -> Vec<Vec<&str>> {
     let mut stacks = Vec::new();
     let rs = stack_data[..stack_data.len()-2].lines();
 
-    let crates = stack_data.lines()
-        .last()
-        .unwrap()
-        .as_bytes()
-        .chunks(4);
-
-    for _ in crates {
+    for _ in 0..stack_data.lines().last().unwrap().split("   ").count() {
         stacks.push(Vec::new());
     }
     
@@ -94,6 +88,17 @@ fn parse_out(stacks: Vec<Vec<&str>>) -> String {
             .unwrap());
     }
     ans
+}
+
+fn parse_out_functional(stacks: Vec<Vec<&str>>) -> String {
+    stacks
+        .into_iter()
+        .map(|mut i| i.pop()
+        .unwrap()
+        .chars()
+        .nth(1)
+        .unwrap())
+        .collect()
 }
 
 #[cfg(test)]
