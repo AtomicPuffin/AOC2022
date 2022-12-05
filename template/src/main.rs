@@ -6,8 +6,8 @@ use std::fs;
 
 fn main() {
     let file = "input.txt";
-    println!("Answer to Part 1 functional using sets: {}", part_1(fs::read_to_string(file).unwrap().trim()));
-    println!("Answer to Part 2 imperative using sets: {}", part_2(fs::read_to_string(file).unwrap().trim()));
+    println!("Answer to Part 1: {}", part_1(fs::read_to_string(file).unwrap().trim()));
+    println!("Answer to Part 2: {}", part_2(fs::read_to_string(file).unwrap().trim()));
 }
 
 fn part_1 (input: &str) -> i32 {
