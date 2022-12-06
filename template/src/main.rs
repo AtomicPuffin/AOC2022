@@ -5,9 +5,9 @@ use std::iter::FromIterator;
 use std::fs;
 
 fn main() {
-    let file = "input.txt";
-    println!("Answer to Part 1: {}", part_1(fs::read_to_string(file).unwrap().trim()));
-    println!("Answer to Part 2: {}", part_2(fs::read_to_string(file).unwrap().trim()));
+
+    println!("Answer to Part 1: {}", part_1(read_file("input copy.txt")));
+    println!("Answer to Part 2: {}", part_2(read_file("input copy.txt")));
 }
 
 fn part_1 (input: &str) -> i32 {
@@ -19,6 +19,10 @@ fn part_2 (input: &str) -> i32 {
     todo!()
 }
 
+fn read_file(file: &str) -> String {
+    fs::read_to_string(file).unwrap().trim()
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs;
@@ -28,24 +32,24 @@ mod tests {
     #[ignore]
     #[test]
     fn test_p1_ex() {
-        assert_eq!(part_1(fs::read_to_string("input copy.txt").unwrap().trim()), todo!());
+        assert_eq!(part_1(read_file("input copy.txt")), todo!());
     }
 
     #[ignore]
     #[test]
     fn test_p1() {
-        assert_eq!(part_1(fs::read_to_string("input.txt").unwrap().trim()), todo!());
+        assert_eq!(part_1(read_file("input.txt")), todo!());
     }
 
     #[ignore]
     #[test]
     fn test_p2_ex() {
-        assert_eq!(part_2(fs::read_to_string("input copy.txt").unwrap().trim()), todo!());
+        assert_eq!(part_2(read_file("input copy.txt")), todo!());
     }
 
     #[ignore]
     #[test]
     fn test_p2() {
-        assert_eq!(part_2(fs::read_to_string("input.txt").unwrap().trim()), todo!());
+        assert_eq!(part_2(read_file("input.txt")), todo!());
     }
 }
