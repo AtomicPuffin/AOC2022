@@ -32,11 +32,12 @@ fn part_1 (input: &str) -> i32 {
 fn part_2 (input: &str) -> i32 {
     let mut counter = 1;
     let mut sop = Vec::new();
+    sop.push('\n');
     for c in input.chars() {
-        if counter <= 14 {
+        if counter < 14 {
             sop.push(c);
         } else {
-            sop.remove(0); //will miss if first window matches
+            sop.remove(0);
             sop.push(c);
             let mut trial = true;
             let mut sop_temp = Vec::new();
