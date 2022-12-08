@@ -80,7 +80,6 @@ fn read_file(file: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::fs;
     use super::*;
     use pretty_assertions::assert_eq;
 

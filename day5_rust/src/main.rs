@@ -37,7 +37,7 @@ fn part_2 (input: &str) -> String {
         }
     }
 
-    let ans = parse_out_f(stacks);
+    let ans = parse_out_functional(stacks);
     ans
 }
 

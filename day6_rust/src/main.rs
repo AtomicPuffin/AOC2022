@@ -74,21 +74,21 @@ mod tests {
 
     #[test]
     fn test_p1_ex() {
-        assert_eq!(part_1(read_file("input copy.txt")), 6);
+        assert_eq!(part_1(&read_file("input copy.txt")), 6);
     }
 
     #[test]
     fn test_p1() {
-        assert_eq!(part_1(read_file("input.txt")), 1723);
+        assert_eq!(part_1(&read_file("input.txt")), 1723);
     }
 
     #[test]
     fn test_p2_ex() {
-        assert_eq!(part_2(read_file("input copy.txt")), 23);
+        assert_eq!(part_2(&read_file("input copy.txt")), 23);
     }
 
     #[test]
     fn test_p2() {
-        assert_eq!(part_2(read_file("input.txt")), 3708);
+        assert_eq!(part_2(&read_file("input.txt")), 3708);
     }
 }
