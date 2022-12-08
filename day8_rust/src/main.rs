@@ -18,38 +18,18 @@ fn part_1 (input: &str) -> usize {
         }
         trees.push(row);
     }
+
     let mut answer = trees[0].len() *2; //add first last row
     let max_row = trees.len();
     let max_col = trees[0].len();
     for y in 1..max_row-1 {
         answer += 2; //add first last element of row
         for x in 1..max_col-1 { // for each coordinate
-            let mut tallest_u = true;
-            let mut tallest_d = true;
-            let mut tallest_l = true;
-            let mut tallest_r = true;
-
-            for u in 0..y { //iterate all directions
-                if trees[y][x] <= trees[u][x] {
-                    tallest_u = false;
-                }
-            }
-            for d in y+1..max_row {
-                if trees[y][x] <= trees[d][x] {
-                    tallest_d = false;
-                }
-            }
-            for l in 0..x {
-                if trees[y][x] <= trees[y][l] {
-                    tallest_l = false;
-                }
-            }
-            for r in x+1..max_col {
-                if trees[y][x] <= trees[y][r] {
-                    tallest_r = false;
-                }
-            }
-            if tallest_u || tallest_d || tallest_l || tallest_r {
+            let tallest_u = (0..y).all(|u| trees[y][x] > trees[u][x]);
+            let tallest_d = (y+1..max_row).all(|d| trees[y][x] > trees[d][x]);
+            let tallest_l = (0..x).all(|l| trees[y][x] > trees[y][l]);
+            let tallest_r = (x+1..max_col).all(|r| trees[y][x] > trees[y][r]);
+            if [tallest_u, tallest_d, tallest_l, tallest_r].iter().any(|&b| b) {
                 answer +=1;
             }
         }
