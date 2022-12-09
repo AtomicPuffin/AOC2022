@@ -9,15 +9,14 @@ fn main() {
 }
 
 fn part_1 (input: &str) -> usize {
-    let mut trees = Vec::new();
-    for r in input.lines() {
-        let mut row = Vec::new();
-        for t in r.chars() {
-            let x = t.to_string().parse::<i32>().unwrap();
-            row.push(x)
-        }
-        trees.push(row);
-    }
+    let trees: Vec<Vec<i32>> = input
+        .lines()
+        .map(|l| l.chars()
+            .map(|c| c.to_string()
+                .parse::<i32>()
+                .unwrap())
+            .collect())
+        .collect();
 
     let mut answer = trees[0].len() *2; //add first last row
     let max_row = trees.len();
@@ -25,10 +24,11 @@ fn part_1 (input: &str) -> usize {
     for y in 1..max_row-1 {
         answer += 2; //add first last element of row
         for x in 1..max_col-1 { // for each coordinate
-            let tallest_u = (0..y).all(|u| trees[y][x] > trees[u][x]);
-            let tallest_d = (y+1..max_row).all(|d| trees[y][x] > trees[d][x]);
-            let tallest_l = (0..x).all(|l| trees[y][x] > trees[y][l]);
-            let tallest_r = (x+1..max_col).all(|r| trees[y][x] > trees[y][r]);
+            let tree = trees[y][x];
+            let tallest_u = (0..y).all(|u| tree > trees[u][x]);
+            let tallest_d = (y+1..max_row).all(|d| tree > trees[d][x]);
+            let tallest_l = (0..x).all(|l| tree > trees[y][l]);
+            let tallest_r = (x+1..max_col).all(|r| tree > trees[y][r]);
             if [tallest_u, tallest_d, tallest_l, tallest_r].iter().any(|&b| b) {
                 answer +=1;
             }
@@ -38,7 +38,7 @@ fn part_1 (input: &str) -> usize {
 }
 
 
-fn part_2 (input: &str) -> i32 {
+fn part_2 (input: &str) -> usize {
     let mut trees = Vec::new();
     for r in input.lines() {
         let mut row = Vec::new();
@@ -58,9 +58,9 @@ fn part_2 (input: &str) -> i32 {
             let mut view_d = 0;
             let mut view_l = 0;
             let mut view_r = 0;
-
+    
             for u in (0..y).rev() {
-                view_u += 1;
+                view_u += 1; //inclusive last element
                 if trees[y][x] <= trees[u][x] {
                     break;
                 }
@@ -68,7 +68,6 @@ fn part_2 (input: &str) -> i32 {
             for d in y+1..max_row {
                 view_d += 1;
                 if trees[y][x] <= trees[d][x] {
-    
                     break;
                 }
             }
@@ -88,8 +87,8 @@ fn part_2 (input: &str) -> i32 {
             if answer < new {
                 answer = new;
             }
-            }
         }
+    }
     answer
 }
 
