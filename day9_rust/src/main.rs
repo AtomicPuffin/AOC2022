@@ -13,11 +13,12 @@ fn part_1 (input: &str) -> usize {
     let mut visited = HashSet::new();
     let mut h = (0,0); // x, y
     let mut t = (0,0);
-    for i in input.lines() {
-        let mut row = i.chars();
-        let d = row.next().unwrap();
-        row.next();
-        let s = row.as_str().parse::<i32>().unwrap();
+
+    for l in input.lines() { //remade trying another method for parsing the input, p2 contains original
+        let i: Vec<&str> = l.split(' ').collect();
+        let d = i[0].chars().next().unwrap();
+        let s = i[1].parse::<usize>().unwrap();
+
         for _ in 0..s {
             match d {
                 'U' => h.0 += 1,

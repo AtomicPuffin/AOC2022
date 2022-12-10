@@ -13,10 +13,7 @@ fn main() {
 }
 
 fn part_1 (input: &str) -> i32 {
-    let mut visited = HashSet::new();
-    let mut h = (0,0);
-    let mut t = (0,0);
-    
+    todo!()
 }
 
 fn part_2 (input: &str) -> i32 {
@@ -32,9 +29,10 @@ mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
 
+    #[ignore]
     #[test]
     fn test_p1_ex() {
-        assert_eq!(part_1(&read_file("input copy.txt")), 13);
+        assert_eq!(part_1(&read_file("input copy.txt")), todo!());
     }
 
     #[ignore]
