@@ -1,10 +1,8 @@
-//use core::num::dec2flt::parse;
 use std::{
     fs::File,
     io::{prelude::*, BufReader},
     path::Path,
 };
-//use std::io::Result;
 
 fn read_input(filename: impl AsRef<Path>) -> Vec<String> {
     let file = File::open(filename).expect("Filename error");
@@ -16,7 +14,6 @@ fn read_input(filename: impl AsRef<Path>) -> Vec<String> {
 
 pub fn run() {
     let input = read_input("input3.txt");
-    //let mut input = read_input("input3 copy.txt");
     let mut score = 0;
     for i in input {        
         let (first, second) = i.split_at(i.len()/2);

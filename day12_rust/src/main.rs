@@ -58,7 +58,7 @@ fn find_next(unvisited: &HashMap<(i32,i32), (i32, i32)>, pos: (i32, i32), part_2
         let mut temp = (-10,-10);
         temp.0 = pos.0 + i.0;
         temp.1 = pos.1 + i.1;
-        if temp.0 >= 0 && temp.1 >= 0  && unvisited.contains_key(&temp) { // avoid leaving grid
+        if temp.0 >= 0 && temp.1 >= 0 && unvisited.contains_key(&temp) { // avoid leaving grid
             // check if ok step, all distances = 1
             if part_2 {
                 if unvisited[&temp].0 >= unvisited[&pos].0 -1 {
@@ -108,25 +108,21 @@ mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
 
-    #[ignore]
     #[test]
     fn test_p1_ex() {
         assert_eq!(part_1(&read_file("input copy.txt")), 31);
     }
 
-    #[ignore]
     #[test]
     fn test_p1() {
         assert_eq!(part_1(&read_file("input.txt")), 447);
     }
 
-    #[ignore]
     #[test]
     fn test_p2_ex() {
         assert_eq!(part_2(&read_file("input copy.txt")), 29);
     }
 
-    #[ignore]
     #[test]
     fn test_p2() {
         assert_eq!(part_2(&read_file("input.txt")), 446);
