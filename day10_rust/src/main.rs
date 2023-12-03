@@ -1,15 +1,20 @@
 use std::fs;
 
 fn main() {
-
-    println!("Answer to Part 1 test: {}", part_1(&read_file("input copy.txt")));
+    println!(
+        "Answer to Part 1 test: {}",
+        part_1(&read_file("input copy.txt"))
+    );
     println!("Answer to Part 1: {}", part_1(&read_file("input.txt")));
-    println!("Answer to Part 2 test: {}", part_2(&read_file("input copy.txt")));
+    println!(
+        "Answer to Part 2 test: {}",
+        part_2(&read_file("input copy.txt"))
+    );
     println!("Answer to Part 2: {}", part_2(&read_file("input.txt")));
 }
 
-fn part_1 (input: &str) -> i32 {
-    let cycles = [20,60,100,140,180,220];
+fn part_1(input: &str) -> i32 {
+    let cycles = [20, 60, 100, 140, 180, 220];
     let mut x = 1;
     let mut cycle = 0;
     let mut answer = 0;
@@ -36,24 +41,24 @@ fn part_1 (input: &str) -> i32 {
     answer
 }
 
-fn part_2 (input: &str) -> i32 {
+fn part_2(input: &str) -> i32 {
     let mut screen = [['.'; 40]; 6];
-    let mut x:i32 = 1;
+    let mut x: i32 = 1;
     let mut cycle: usize = 0;
     for l in input.lines() {
         let inst: Vec<&str> = l.split(' ').collect();
         if inst[0] == "addx" {
             for _ in 0..2 {
-                if (cycle % 40) as i32 >= x-1 && (cycle % 40) as i32 <= x+1 {
-                    screen[cycle/40][cycle-(cycle / 40 * 40)] = '#';
+                if (cycle % 40) as i32 >= x - 1 && (cycle % 40) as i32 <= x + 1 {
+                    screen[cycle / 40][cycle - (cycle / 40 * 40)] = '#';
                 }
                 cycle += 1;
             }
             let y = inst[1].parse::<i32>().unwrap();
             x += y;
         } else if inst[0] == "noop" {
-            if (cycle % 40) as i32 >= x-1 && (cycle % 40) as i32 <= x+1 {
-                screen[cycle/40][cycle-(cycle / 40 * 40)] = '#';
+            if (cycle % 40) as i32 >= x - 1 && (cycle % 40) as i32 <= x + 1 {
+                screen[cycle / 40][cycle - (cycle / 40 * 40)] = '#';
             }
             cycle += 1;
         } else {
@@ -92,12 +97,12 @@ mod tests {
     #[ignore]
     #[test]
     fn test_p2_ex() {
-        assert_eq!(part_2(&read_file("input copy.txt")), todo!());
+        assert_eq!(part_2(&read_file("input copy.txt")), 0);
     }
 
     #[ignore]
     #[test]
     fn test_p2() {
-        assert_eq!(part_2(&read_file("input.txt")), todo!());
+        assert_eq!(part_2(&read_file("input.txt")), 0);
     }
 }

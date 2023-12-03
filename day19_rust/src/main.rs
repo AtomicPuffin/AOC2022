@@ -1,11 +1,15 @@
-
 use std::fs;
 
 fn main() {
-
-    println!("Answer to Part 1 test: {}", part_1(&read_file("input copy.txt")));
+    println!(
+        "Answer to Part 1 test: {}",
+        part_1(&read_file("input copy.txt"))
+    );
     println!("Answer to Part 1: {}", part_1(&read_file("input.txt")));
-    println!("Answer to Part 2 test: {}", part_2(&read_file("input copy.txt")));
+    println!(
+        "Answer to Part 2 test: {}",
+        part_2(&read_file("input copy.txt"))
+    );
     println!("Answer to Part 2: {}", part_2(&read_file("input.txt")));
 }
 
@@ -14,8 +18,8 @@ struct Blueprint {
     id: i32,
     ore: i32,
     clay: i32,
-    obsidian: (i32,i32),
-    geode: (i32,i32),
+    obsidian: (i32, i32),
+    geode: (i32, i32),
 }
 
 #[derive(Copy, Clone)]
@@ -42,7 +46,7 @@ impl Factory {
     }
 }
 
-fn part_1 (input: &str) -> i32 {
+fn part_1(input: &str) -> i32 {
     let blueprints = parse_bp(input);
     let mut answer = 0;
     for bp in blueprints {
@@ -65,7 +69,7 @@ fn part_1 (input: &str) -> i32 {
     answer
 }
 
-fn part_2 (input: &str) -> i32 {
+fn part_2(input: &str) -> i32 {
     let blueprints = parse_bp(input);
     let mut answer = 1;
     let mut counter = 0;
@@ -96,38 +100,46 @@ fn part_2 (input: &str) -> i32 {
 fn branch(mut fct: Factory) -> i32 {
     fct.clock -= 1; //countdown clock
     if fct.clock == 0 {
-        return fct.geode
+        return fct.geode;
     }
 
     // produce the designated robot if resources available
     match fct.next {
-        3 => { if fct.bp.geode.0 <= fct.ore && fct.bp.geode.1 <= fct.obsidian {
-            fct.obsidian -= fct.bp.geode.1;
-            fct.ore -= fct.bp.geode.0;
-            fct.geode_rob += 1;
-            fct.geode -= 1; //compensate for instruction out of order
-            fct.next = -1;
-        }},
-        2 => {if fct.bp.obsidian.0 <= fct.ore && fct.bp.obsidian.1 <= fct.clay {
-            fct.clay -= fct.bp.obsidian.1;
-            fct.ore -= fct.bp.obsidian.0;
-            fct.obsidian_rob += 1;
-            fct.obsidian -= 1;
-            fct.next = -1;
-        }},
-        1 => {if fct.ore >= fct.bp.clay {
-            fct.ore -= fct.bp.clay;
-            fct.clay_rob += 1;
-            fct.clay -= 1;
-            fct.next = -1;
-        }},
-        0 => {if fct.ore >= fct.bp.ore {
-            fct.ore -= fct.bp.ore;
-            fct.ore_rob += 1;
-            fct.ore -= 1;
-            fct.next = -1;
-        }},
-        _ => {},
+        3 => {
+            if fct.bp.geode.0 <= fct.ore && fct.bp.geode.1 <= fct.obsidian {
+                fct.obsidian -= fct.bp.geode.1;
+                fct.ore -= fct.bp.geode.0;
+                fct.geode_rob += 1;
+                fct.geode -= 1; //compensate for instruction out of order
+                fct.next = -1;
+            }
+        }
+        2 => {
+            if fct.bp.obsidian.0 <= fct.ore && fct.bp.obsidian.1 <= fct.clay {
+                fct.clay -= fct.bp.obsidian.1;
+                fct.ore -= fct.bp.obsidian.0;
+                fct.obsidian_rob += 1;
+                fct.obsidian -= 1;
+                fct.next = -1;
+            }
+        }
+        1 => {
+            if fct.ore >= fct.bp.clay {
+                fct.ore -= fct.bp.clay;
+                fct.clay_rob += 1;
+                fct.clay -= 1;
+                fct.next = -1;
+            }
+        }
+        0 => {
+            if fct.ore >= fct.bp.ore {
+                fct.ore -= fct.bp.ore;
+                fct.ore_rob += 1;
+                fct.ore -= 1;
+                fct.next = -1;
+            }
+        }
+        _ => {}
     }
 
     fct.collect();
@@ -136,13 +148,14 @@ fn branch(mut fct: Factory) -> i32 {
 
     if fct.next == -1 {
         let mut next = Vec::new();
-        if fct.ore <= 5  { //prune by not producing robots with ample stock
+        if fct.ore <= 5 {
+            //prune by not producing robots with ample stock
             next.push(0);
-        }        
-        if fct.clay <= fct.bp.obsidian.1 +1  {
+        }
+        if fct.clay <= fct.bp.obsidian.1 + 1 {
             next.push(1);
         }
-        if fct.clay_rob > 0 && fct.obsidian <= fct.bp.geode.1 +1  {
+        if fct.clay_rob > 0 && fct.obsidian <= fct.bp.geode.1 + 1 {
             next.push(2);
         }
         if fct.obsidian_rob > 0 {
@@ -153,11 +166,11 @@ fn branch(mut fct: Factory) -> i32 {
             fct_temp.next = i;
             branches.push(branch(fct_temp));
         }
-       
+
         branches.sort();
-        return branches.pop().unwrap()
+        return branches.pop().unwrap();
     } else {
-        return branch(fct)
+        return branch(fct);
     }
 }
 
@@ -171,8 +184,14 @@ fn parse_bp(input: &str) -> Vec<Blueprint> {
             id: id,
             ore: raw[6].parse::<i32>().unwrap(),
             clay: raw[12].parse::<i32>().unwrap(),
-            obsidian: (raw[18].parse::<i32>().unwrap(), raw[21].parse::<i32>().unwrap()),
-            geode: (raw[27].parse::<i32>().unwrap(), raw[30].parse::<i32>().unwrap()),
+            obsidian: (
+                raw[18].parse::<i32>().unwrap(),
+                raw[21].parse::<i32>().unwrap(),
+            ),
+            geode: (
+                raw[27].parse::<i32>().unwrap(),
+                raw[30].parse::<i32>().unwrap(),
+            ),
         };
         blueprints.push(bp);
         id += 1;
@@ -202,12 +221,12 @@ mod tests {
     #[ignore]
     #[test]
     fn test_p2_ex() {
-        assert_eq!(part_2(&read_file("input copy.txt")), todo!());
+        assert_eq!(part_2(&read_file("input copy.txt")), 62);
     }
 
     #[ignore]
     #[test]
     fn test_p2() {
-        assert_eq!(part_2(&read_file("input.txt")), todo!());
+        assert_eq!(part_2(&read_file("input.txt")), 37604);
     }
 }

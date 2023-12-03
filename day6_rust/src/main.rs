@@ -1,14 +1,13 @@
 use std::fs;
 
 fn main() {
-
     println!("Answer to Part 1: {}", part_1(&read_file("input.txt")));
     println!("Answer to Part 2: {}", part_2(&read_file("input.txt")));
 }
 
-fn part_1 (input: &str) -> i32 {
+fn part_1(input: &str) -> i32 {
     let mut counter = 1;
-    let mut sop = (' ',' ',' ',' ');
+    let mut sop = (' ', ' ', ' ', ' ');
     for c in input.chars() {
         sop.0 = sop.1;
         sop.1 = sop.2;
@@ -19,17 +18,18 @@ fn part_1 (input: &str) -> i32 {
             && sop.0 != sop.3
             && sop.1 != sop.2
             && sop.1 != sop.3
-            && sop.2 != sop.3 {
-                if counter > 4 {
-                    return counter
-                }
+            && sop.2 != sop.3
+        {
+            if counter > 4 {
+                return counter;
             }
+        }
         counter += 1;
     }
     panic!("Reached eof without match");
 }
 
-fn part_2 (input: &str) -> i32 {
+fn part_2(input: &str) -> i32 {
     let mut counter = 1;
     let mut sop = Vec::new();
     sop.push('\n');
@@ -54,7 +54,7 @@ fn part_2 (input: &str) -> i32 {
                 }
             }
             if trial {
-                return counter
+                return counter;
             }
         }
         counter += 1;
@@ -68,7 +68,6 @@ fn read_file(file: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::fs;
     use super::*;
     use pretty_assertions::assert_eq;
 

@@ -1,14 +1,20 @@
+#![allow(unused)]
 use std::fs;
 
 fn main() {
-
-    println!("Answer to Part 1 test: {}", part_1(&read_file("input copy.txt")));
+    println!(
+        "Answer to Part 1 test: {}",
+        part_1(&read_file("input copy.txt"))
+    );
     println!("Answer to Part 1: {}", part_1(&read_file("input.txt")));
-    println!("Answer to Part 2 test: {}", part_2(&read_file("input copy.txt")));
+    println!(
+        "Answer to Part 2 test: {}",
+        part_2(&read_file("input copy.txt"))
+    );
     println!("Answer to Part 2: {}", part_2(&read_file("input.txt")));
 }
 
-fn part_1 (input: &str) -> usize {
+fn part_1(input: &str) -> usize {
     let instructions: Vec<char> = input.chars().collect();
     let mut dir_index = 0;
     let mut room = Vec::new();
@@ -22,11 +28,14 @@ fn part_1 (input: &str) -> usize {
             dir_index = (dir_index + 1) % instructions.len();
             shape = out; // motion dealt with inside, ignore possible since hitting walls is irrelevant
             let (out, possible) = move_shape(&shape, &room, 'd');
-            if !possible { //could not drop, add to room
+            if !possible {
+                //could not drop, add to room
                 for (h, s) in out {
-                    if h < room.len() { //same level as current room
+                    if h < room.len() {
+                        //same level as current room
                         room[h] = room[h] | s; // bitwise or combines row
-                    } else { //new level
+                    } else {
+                        //new level
                         room.push(s);
                     }
                 }
@@ -38,10 +47,10 @@ fn part_1 (input: &str) -> usize {
         rock += 1;
     }
     //print_room(&room);
-    room.len()-1 //-1 since we use one space for the floor
+    room.len() - 1 //-1 since we use one space for the floor
 }
 
-fn part_2 (input: &str) -> usize {
+fn part_2(input: &str) -> usize {
     let instructions: Vec<char> = input.chars().collect();
     let mut dir_index = 0;
     let mut room = Vec::new();
@@ -58,7 +67,7 @@ fn part_2 (input: &str) -> usize {
         loop {
             let (out, _possible) = move_shape(&shape, &room, instructions[dir_index]);
             // detect repeating pattern when instructions loop, not every loop, but neventually
-            if dir_index +1 == instructions.len() && !found_pattern {
+            if dir_index + 1 == instructions.len() && !found_pattern {
                 // save loop snapshot
                 pattern.push((cycles_new, shape_number, room.len(), rock));
                 if pattern.len() >= 2 {
@@ -72,9 +81,9 @@ fn part_2 (input: &str) -> usize {
                             let cycle_units = l - p.2;
                             let cycles = (1000000000000 - p.3) / cycle_rocks;
                             // -1 cycle so we can just use room.len for head and tail and the first cycle
-                            units = (cycles -1) * cycle_units;
+                            units = (cycles - 1) * cycle_units;
                             //remove head and cycles, execute tail
-                            rocks_to = 1000000000000 - (cycles-1) * cycle_rocks; 
+                            rocks_to = 1000000000000 - (cycles - 1) * cycle_rocks;
                             found_pattern = true;
                         }
                     }
@@ -84,7 +93,8 @@ fn part_2 (input: &str) -> usize {
             dir_index = (dir_index + 1) % instructions.len();
             shape = out; // motion dealt with inside, ignore possible since hitting walls is irrelevant
             let (out, possible) = move_shape(&shape, &room, 'd');
-            if !possible { //could not drop, add to room
+            if !possible {
+                //could not drop, add to room
                 for (h, s) in out {
                     if h < room.len() {
                         room[h] = room[h] | s;
@@ -100,7 +110,7 @@ fn part_2 (input: &str) -> usize {
         rock += 1;
     }
     //print_room(&room);
-    units + room.len() -1
+    units + room.len() - 1
 }
 
 fn print_room(room: &Vec<u8>) {
@@ -112,13 +122,16 @@ fn print_room(room: &Vec<u8>) {
     println!("#############");
 }
 
-fn create_next(mut height: usize , rock: usize) -> Vec<(usize, u8)> {
+fn create_next(mut height: usize, rock: usize) -> Vec<(usize, u8)> {
     let mut out: Vec<(usize, u8)> = Vec::new();
-    let shapes = {vec![vec![0b00011110],
-                    vec![0b00001000, 0b00011100, 0b00001000],
-                    vec![0b00000100, 0b00000100, 0b00011100],
-                    vec![0b00010000, 0b00010000, 0b00010000, 0b0010000],
-                    vec![0b00011000, 0b00011000]]
+    let shapes = {
+        vec![
+            vec![0b00011110],
+            vec![0b00001000, 0b00011100, 0b00001000],
+            vec![0b00000100, 0b00000100, 0b00011100],
+            vec![0b00010000, 0b00010000, 0b00010000, 0b0010000],
+            vec![0b00011000, 0b00011000],
+        ]
     };
     let mut shape = shapes[(rock % 5) as usize].clone();
     height += 3;
@@ -130,14 +143,18 @@ fn create_next(mut height: usize , rock: usize) -> Vec<(usize, u8)> {
     out
 }
 
-fn move_shape(shape: &Vec<(usize, u8)>, room: &Vec<u8>, direction: char) -> (Vec<(usize, u8)>, bool) {
+fn move_shape(
+    shape: &Vec<(usize, u8)>,
+    room: &Vec<u8>,
+    direction: char,
+) -> (Vec<(usize, u8)>, bool) {
     let mut out: Vec<(usize, u8)> = Vec::new();
     let mut possible = true;
     for (h, s) in shape {
         if direction == '>' {
             possible = possible && (s & 0b0000_0001 == 0); //test wall (see if edge is 1)
             if room.len() > *h {
-                possible = possible && ((s >> 1) & room[*h] == 0);//see if we run into old piece
+                possible = possible && ((s >> 1) & room[*h] == 0); //see if we run into old piece
             }
         } else if direction == '<' {
             possible = possible && (s & 0b0100_0000 == 0); //test wall
@@ -145,19 +162,19 @@ fn move_shape(shape: &Vec<(usize, u8)>, room: &Vec<u8>, direction: char) -> (Vec
                 possible = possible && ((s << 1) & room[*h] == 0); //see if we run into old piece
             }
         } else {
-            if room.len() > (*h-1) {
-                possible = possible && s & room[(*h-1)] == 0; //test collission down
+            if room.len() > (*h - 1) {
+                possible = possible && s & room[*h - 1] == 0; //test collission down
             }
         }
     }
     if possible {
-        for (h,s) in shape {
+        for (h, s) in shape {
             if direction == '>' {
                 out.push((*h, *s >> 1));
             } else if direction == '<' {
                 out.push((*h, *s << 1));
             } else {
-                out.push((*h-1, *s));
+                out.push((*h - 1, *s));
             }
         }
     } else {

@@ -1,12 +1,14 @@
 use std::fs;
 
 fn main() {
-
-    println!("Answer to Part 1 test: {}", part_1(&read_file("input copy.txt")));
+    println!(
+        "Answer to Part 1 test: {}",
+        part_1(&read_file("input copy.txt"))
+    );
     println!("Answer to Part 1: {}", part_1(&read_file("input.txt")));
 }
 
-fn part_1 (input: &str) -> String {
+fn part_1(input: &str) -> String {
     let mut sum = "0".to_string();
     let mut sum2 = 0;
     for l in input.lines() {
@@ -17,13 +19,12 @@ fn part_1 (input: &str) -> String {
     sum
 }
 
-
 fn add_snafu(snafu_a: &str, snafu_b: &str) -> String {
     let a: Vec<i128> = snafu_a.chars().map(|x| translate_todigit(x)).collect();
     let b: Vec<i128> = snafu_b.chars().map(|x| translate_todigit(x)).collect();
     let mut carry = 0;
     let mut sum: Vec<i128> = Vec::new();
-    let (mut long, mut short) = if a.len() > b.len() {(a, b)} else {(b,a)};
+    let (mut long, mut short) = if a.len() > b.len() { (a, b) } else { (b, a) };
     let mut ans;
     while let Some(n1) = long.pop() {
         if short.len() > 0 {
@@ -48,14 +49,14 @@ fn add_snafu(snafu_a: &str, snafu_b: &str) -> String {
     out
 }
 
-fn add_dig(a: i128, b:i128, carry:i128) -> (i128,i128) {
+fn add_dig(a: i128, b: i128, carry: i128) -> (i128, i128) {
     let ans = a + b + carry;
     if ans > 2 {
-        return (ans - 5, 1)
+        return (ans - 5, 1);
     } else if ans < -2 {
-        return (ans + 5, -1)
+        return (ans + 5, -1);
     } else {
-        return (ans, 0)
+        return (ans, 0);
     }
 }
 
@@ -110,11 +111,11 @@ mod tests {
 
     #[test]
     fn test_p1_ex() {
-        assert_eq!(part_1(&read_file("input copy.txt")), 2=-1=0);
+        assert_eq!(part_1(&read_file("input copy.txt")), "2=-1=0");
     }
 
     #[test]
     fn test_p1() {
-        assert_eq!(part_1(&read_file("input.txt")), 20-1-11==0-=0112-222);
+        assert_eq!(part_1(&read_file("input.txt")), "20-1-11==0-=0112-222");
     }
 }
