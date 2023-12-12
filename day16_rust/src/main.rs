@@ -1,14 +1,12 @@
-#![allow(dead_code, unreachable_code, unused_imports, unused_variables)]
 use std::cmp::Ordering;
-use std::collections::BTreeSet;
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
-//use std::env;
+use std::time::Instant;
+
 use std::fs;
 
 fn main() {
-    //env::set_var("RUST_BACKTRACE", "1");
     println!(
         "Answer to Part 1 test: {}",
         part_1(&read_file("input copy.txt"), 30)
@@ -22,30 +20,94 @@ fn main() {
 }
 
 fn part_1(input: &str, max_time: i32) -> i32 {
+    let start_time = Instant::now();
+    println!("Start time: {:?}", start_time);
     let cave = parse_rooms(input);
     let djik_cave = all_the_djikstras(cave.clone());
-    //breadth_first_search(djik_cave, "AA".to_string(), max_time)
-    breadth_first_search_x2(djik_cave, "AA".to_string(), 50, max_time)
+    let (bit_cave, _) = bitize_keys(djik_cave.clone());
+    let res = breadth_first_search(&bit_cave, 1, max_time, 0);
+    println!("End time: {:?}", (start_time.elapsed().as_secs() as f32));
+    res
 }
 
 fn part_2(input: &str, max_time: i32) -> i32 {
+    let start_time = Instant::now();
+    println!("Start time: {:?}", start_time);
     let cave = parse_rooms(input);
     let djik_cave = all_the_djikstras(cave.clone());
-    breadth_first_search_x2(djik_cave, "AA".to_string(), 0, max_time)
+    let (bit_cave, max_bit) = bitize_keys(djik_cave.clone());
+    let states = seed_states(max_bit);
+    let res = plant_seeds(bit_cave, max_time, states, max_bit);
+    println!("End time: {:?}", (start_time.elapsed().as_secs() as f32));
+    res
 }
 
-/*fn breadth_first_search(
-    cave: HashMap<String, (i32, HashMap<String, i32>)>,
-    start: String,
+fn plant_seeds(
+    bit_cave: HashMap<i16, (i32, HashMap<i16, i32>)>,
     max_time: i32,
+    states: HashSet<i16>,
+    max_bit: i16,
 ) -> i32 {
+    let mut max = 0;
+    let mut max_seed = 0;
+    for seed in states.clone() {
+        if !max_bit & seed == 0 {
+            let el_seed = !seed & max_bit;
+            let me = breadth_first_search(&bit_cave, 1, max_time, seed);
+            let elephant = breadth_first_search(&bit_cave, 1, max_time, el_seed);
+            if max < me + elephant {
+                max = me + elephant;
+                max_seed = seed.clone();
+            }
+        }
+    }
+    println!(
+        "Max seed: {:#018b} Inverse {:#018b}",
+        max_seed,
+        !max_seed & max_bit
+    );
+    max
+}
+
+fn seed_states(max_bit: i16) -> HashSet<i16> {
+    let mut states = HashSet::new();
+    let mut current_state: i16 = 0;
+    let end_state: i16 = i16::MAX; //sign bit is AA, we can ignore it and use it as u15
+
+    // create all bitpatterns
+    while end_state > current_state {
+        current_state += 1;
+        // set a limit on uneven distributions, ie smaller set must have x rooms
+        if !states.contains(&!current_state)
+            && current_state.count_ones() > max_bit.count_ones() / 2
+        {
+            // WARNING hard coded cutof
+            states.insert(current_state);
+        }
+    }
+
+    // return patterns, starting pattern describes EXCLUDED rooms
+    // answer is the best solution for both the pattern and its inverse
+    states
+}
+
+//need cashing to avoid recalculating on single tracks
+// create function that calculates values for a solo-state and saves it to a hashmap as cashe
+
+fn breadth_first_search(
+    cave: &HashMap<i16, (i32, HashMap<i16, i32>)>,
+    start: i16,
+    max_time: i32,
+    visited: i16,
+) -> i32 {
+    //room names have been translated to bit patterns, where every bit corresponds to one room
     #[derive(Clone, Eq)]
     struct State {
-        room: String,
+        room: i16,
         flow: i32,
         pressure: i32,
         time: i32,
-        visited: HashSet<String>,
+        visited: i16,
     }
 
     impl PartialOrd for State {
@@ -64,30 +126,27 @@ fn part_2(input: &str, max_time: i32) -> i32 {
         }
     }
     let mut max_pressure = 0;
-    let mut winning_state: State = State {
-        room: "".to_string(),
-        flow: 0,
-        pressure: 0,
-        time: 0,
-        visited: HashSet::new(),
-    };
-    let numer_of_rooms = cave.len();
 
-    let mut visited: HashSet<String> = HashSet::new();
-    visited.insert(start.clone());
     let root: State = State {
         room: start,
         flow: 0,
         pressure: 0,
         time: 0,
-        visited: visited,
+        visited: visited | start,
     };
+    let mut max_rooms = 0;
+    for (room, _) in cave {
+        max_rooms = max_rooms | room;
+    }
+    //println!("Max rooms: {:#018b}", max_rooms);
     let mut queue: Vec<State> = Vec::new();
     queue.push(root);
     while queue.len() > 0 {
         let current = queue.pop().unwrap();
         for new_room in cave.keys() {
-            if !current.visited.contains(new_room) {
+            // if visited is 0 on room bit
+            if (current.visited & new_room) == 0 {
+                // +1 is cost to open valve
                 let distance = cave[&current.room].1[new_room] + 1;
                 let new_time = current.time + distance;
                 // Check for max time
@@ -96,16 +155,14 @@ fn part_2(input: &str, max_time: i32) -> i32 {
                     let new_pressure = current.pressure + current.flow * (max_time - current.time);
                     //See if we have a new max and update if so
                     if new_pressure > max_pressure {
-                        winning_state = current.clone();
                         max_pressure = new_pressure;
                     }
                     continue;
                 }
-                let mut new_visited = current.visited.clone();
-                new_visited.insert(new_room.to_string());
+                let new_visited = new_room | current.visited; //add to pattern
                 let new_flow = current.flow + cave[new_room].0;
                 //check for visited all rooms
-                if new_visited.len() == numer_of_rooms {
+                if new_visited == max_rooms {
                     //We have visited all rooms, count out remaining pressure
                     // first travel and open, then when open
                     let new_pressure = current.pressure
@@ -113,7 +170,6 @@ fn part_2(input: &str, max_time: i32) -> i32 {
                         + new_flow * (max_time - new_time);
                     //See if we have a new max and update if so
                     if new_pressure > max_pressure {
-                        winning_state = current.clone();
                         max_pressure = new_pressure;
                     }
                     continue;
@@ -121,8 +177,9 @@ fn part_2(input: &str, max_time: i32) -> i32 {
 
                 // Gain pressure from flow for travel + 1 for opening
                 let new_pressure = current.pressure + current.flow * distance;
+
                 let new_state = State {
-                    room: new_room.to_string(),
+                    room: *new_room,
                     flow: new_flow,
                     pressure: new_pressure,
                     time: new_time,
@@ -132,225 +189,7 @@ fn part_2(input: &str, max_time: i32) -> i32 {
             }
         }
     }
-    println!(
-        "Winning state: room {} flow {} pressure {} time {} ",
-        winning_state.room, winning_state.flow, winning_state.pressure, winning_state.time
-    );
     max_pressure
-}*/
-
-#[derive(Clone, Eq)]
-struct State {
-    player1: String,
-    arrive1: i32,
-    player2: String,
-    arrive2: i32,
-    flow: i32,
-    pressure: i32,
-    time: i32,
-    visited: HashSet<String>,
-}
-
-impl PartialOrd for State {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-impl Ord for State {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.pressure.cmp(&other.pressure)
-    }
-}
-impl PartialEq for State {
-    fn eq(&self, other: &Self) -> bool {
-        (&self.visited, &self.player1, &self.player2).eq(&(
-            &other.visited,
-            &other.player1,
-            &other.player2,
-        )) || (&self.visited, &self.player1, &self.player2).eq(&(
-            &other.visited,
-            &other.player2,
-            &other.player1,
-        ))
-    }
-}
-
-fn breadth_first_search_x2(
-    cave: HashMap<String, (i32, HashMap<String, i32>)>,
-    start: String,
-    arrive2: i32,
-    max_time: i32,
-) -> i32 {
-    let mut visited_states: HashSet<State>;
-    let mut max_pressure = 0;
-    let mut winning_state: State = State {
-        player1: start.clone(),
-        arrive1: 0,
-        player2: start.clone(),
-        arrive2: 0,
-        flow: 0,
-        pressure: 0,
-        time: 0,
-        visited: HashSet::new(),
-    };
-    let number_of_rooms = cave.len();
-
-    let mut visited: HashSet<String> = HashSet::new();
-    visited.insert(start.clone());
-    let root: State = State {
-        player1: start.to_string(),
-        arrive1: 0,
-        player2: start.to_string(),
-        arrive2: arrive2,
-        flow: 0,
-        pressure: 0,
-        time: 0,
-        visited: visited,
-    };
-
-    let mut queue: Vec<State> = Vec::new();
-    queue.push(root);
-    while queue.len() > 0 {
-        let mut current = queue.pop().unwrap();
-        //let the State arrive at it's destination(s)
-        let mut now = current.arrive1.min(current.arrive2);
-        let mut times_up = false;
-        if now > max_time {
-            times_up = true;
-            now = max_time;
-        }
-        let time_to_here = now - current.time;
-        //update with either or both rooms if they arrived at the same time
-        let mut new_flow = current.flow;
-        //if both if miss, we walk beyond max time
-
-        if now == current.arrive1 && now != current.time {
-            new_flow += cave[&current.player1].0;
-        }
-        if now == current.arrive2 && now != current.time {
-            new_flow += cave[&current.player2].0;
-        }
-        let new_pressure = current.pressure + current.flow * time_to_here;
-        current.time = now;
-        current.pressure = new_pressure;
-        current.flow = new_flow;
-
-        if current.visited.len() == number_of_rooms {
-            if current.arrive1.max(current.arrive2) < max_time {
-                //Other still has time to arrive
-                if current.arrive1 > current.arrive2 {
-                    current.arrive2 = max_time + 1;
-                } else {
-                    current.arrive1 = max_time + 1;
-                }
-                queue.push(current.clone());
-                continue;
-            }
-            current.pressure += current.flow * (max_time - current.time);
-            times_up = true;
-        }
-
-        if times_up {
-            if current.pressure > max_pressure {
-                winning_state = current.clone();
-                max_pressure = current.pressure;
-            }
-            continue;
-        }
-        let mut candidates: Vec<(i32, State, i32, String)> = Vec::new();
-        for new_room in cave.keys() {
-            if !current.visited.contains(new_room) {
-                if current.arrive1 > current.arrive2 {
-                    let weight = cave[new_room].0
-                        * 0.max(max_time - cave[&current.player2].1[new_room] - 1 - current.time);
-                    candidates.push((weight, current.clone(), 2, new_room.to_string()));
-                } else if current.arrive1 < current.arrive2 {
-                    let weight = cave[new_room].0
-                        * 0.max(max_time - cave[&current.player1].1[new_room] - 1 - current.time);
-                    candidates.push((weight, current.clone(), 1, new_room.to_string()));
-                } else {
-                    let weight1 = cave[new_room].0
-                        * 0.max(max_time - cave[&current.player1].1[new_room] - 1 - current.time);
-                    let weight2 = cave[new_room].0
-                        * 0.max(max_time - cave[&current.player2].1[new_room] - 1 - current.time);
-                    if weight1 < weight2 {
-                        candidates.push((weight2, current.clone(), 2, new_room.to_string()));
-                    } else if weight1 > weight2 {
-                        candidates.push((weight1, current.clone(), 1, new_room.to_string()));
-                    } else {
-                        candidates.push((weight1, current.clone(), 1, new_room.to_string()));
-                        candidates.push((weight2, current.clone(), 2, new_room.to_string()));
-                    }
-                }
-            }
-        }
-        let mut counter = 14.min(14.max(candidates.len() / 2));
-        let total_flow = 205;
-        candidates.sort_by(|a, b| a.0.cmp(&b.0));
-        while candidates.len() > 0 {
-            //println!("candidates {}", candidates.len());
-            let candidate = candidates.pop().unwrap();
-            if current.time >= max_time / 2 && current.flow < total_flow / 4 {
-                //println!("Pruned");
-                break;
-            }
-            if counter == 0 {
-                break;
-            }
-
-            let mut new_visited = current.visited.clone();
-            new_visited.insert(candidate.3.to_string());
-            if candidate.2 == 1 {
-                let distance = cave[&current.player1].1[&candidate.3] + 1;
-                let new_arrive = current.arrive1 + distance;
-                let new_state = State {
-                    player1: candidate.3.to_string(),
-                    player2: current.player2.clone(),
-                    arrive1: new_arrive,
-                    arrive2: current.arrive2,
-                    flow: current.flow,
-                    pressure: current.pressure,
-                    time: current.time,
-                    visited: new_visited.clone(),
-                };
-                queue.push(new_state);
-            } else {
-                let distance = cave[&current.player2].1[&candidate.3] + 1;
-                let new_arrive = current.arrive2 + distance;
-                let new_state = State {
-                    player1: current.player1.clone(),
-                    player2: candidate.3.to_string(),
-                    arrive1: current.arrive1,
-                    arrive2: new_arrive,
-                    flow: current.flow,
-                    pressure: current.pressure,
-                    time: current.time,
-                    visited: new_visited.clone(),
-                };
-                queue.push(new_state);
-            }
-            counter -= 1;
-        }
-    }
-    println!(
-        "Winning state: room1 {} room2 {} flow {} pressure {} time1 {} time2 {}",
-        winning_state.player1,
-        winning_state.player2,
-        winning_state.flow,
-        winning_state.pressure,
-        winning_state.arrive1,
-        winning_state.arrive2
-    );
-
-    max_pressure
-}
-
-fn filter_dfs(distance: i32, flow: i32) -> bool {
-    return if (flow as f32 / distance as f32) < 0.5 {
-        false
-    } else {
-        true
-    };
 }
 
 fn parse_rooms(input: &str) -> HashMap<String, (i32, HashMap<String, i32>)> {
@@ -387,18 +226,7 @@ fn parse_rooms(input: &str) -> HashMap<String, (i32, HashMap<String, i32>)> {
             to_optimize = prune(to_optimize, swap, target);
         }
     }
-    //let start = to_optimize["AA"].1.clone();
-    //to_optimize = prune(to_optimize, "AA".to_string(), start.clone());
-    /*for (k,v) in &to_optimize {
-        println!("key {} #############rate {}", k, v.0);
-        for (k,v) in &v.1 {
-            println!("key {} cost {}", k, v);
-        }
-    }
-    println!("{}", to_optimize.len());
-    for i in &start {
-        println!("start {} {}", i.0, i.1);
-    }*/
+
     to_optimize
 }
 
@@ -422,6 +250,35 @@ fn prune(
         }
     }
     cave
+}
+fn bitize_keys(
+    cave: HashMap<String, (i32, HashMap<String, i32>)>,
+) -> (HashMap<i16, (i32, HashMap<i16, i32>)>, i16) {
+    let mut new_cave: HashMap<i16, (i32, HashMap<i16, i32>)> = HashMap::new();
+    let mut rooms = cave.keys().collect::<Vec<&String>>();
+    let mut room = 1;
+    let mut translations = HashMap::new();
+    rooms.sort();
+    let mut max_bit = 0;
+    //rooms.reverse();
+    for r in rooms {
+        translations.insert(r.to_string(), room);
+        max_bit = room | max_bit;
+        room = room << 1;
+    }
+
+    for (room, cont) in &cave {
+        new_cave.insert(translations[room], (cont.0, HashMap::new()));
+
+        for (k, v) in cave[room].1.clone() {
+            new_cave
+                .get_mut(&translations[room])
+                .unwrap()
+                .1
+                .insert(translations[&k], v);
+        }
+    }
+    (new_cave, max_bit)
 }
 
 fn djikstra(
@@ -482,10 +339,6 @@ fn all_the_djikstras(
     for room in cave.keys() {
         let distances = djikstra(cave.clone(), room.to_string());
         new_cave.insert(room.to_string(), (cave[room].0, distances.clone()));
-        /*println!("Room {}", room);
-        for (k, v) in distances {
-            println!("R {} D {} F {}", k, v, cave[&k].0);
-        }*/
     }
     new_cave
 }
@@ -514,9 +367,8 @@ mod tests {
         assert_eq!(part_2(&read_file("input copy.txt"), 26), 1707);
     }
 
-    #[ignore]
     #[test]
     fn test_p2() {
-        assert_eq!(part_2(&read_file("input.txt"), 30), 2191);
+        assert_eq!(part_2(&read_file("input.txt"), 26), 2191);
     }
 }
